@@ -313,3 +313,63 @@ fn bounces() {
         &GetBounceDumpRequest::builder().bounce_id(42).build(),
     );
 }
+
+#[test]
+fn templates() {
+    use postmark::api::templates::{GetTemplateRequest, ListTemplatesRequest, TemplateIdOrAlias};
+    assert_parity(
+        &["templates", "list", "--count", "10", "--offset", "5"],
+        &ListTemplatesRequest::builder().count(10).offset(5).build(),
+    );
+    assert_parity(
+        &["templates", "get", "folder/name with space"],
+        &GetTemplateRequest::builder()
+            .id(TemplateIdOrAlias::Alias(
+                "folder/name with space".to_owned(),
+            ))
+            .build(),
+    );
+    assert_parity(
+        &["templates", "get", "123"],
+        &GetTemplateRequest::builder().id(123).build(),
+    );
+}
+
+#[test]
+fn message_streams() {
+    use postmark::api::message_streams::{
+        GetMessageStreamRequest, ListMessageStreamsRequest, MessageStreamType, StreamIdOrName,
+    };
+    assert_parity(
+        &[
+            "streams",
+            "list",
+            "--message-stream-type",
+            "Broadcasts",
+            "--include-archived-streams",
+        ],
+        &ListMessageStreamsRequest::builder()
+            .message_stream_type(MessageStreamType::Broadcasts)
+            .include_archived_streams(true)
+            .build(),
+    );
+    assert_parity(
+        &["streams", "get", "outbound"],
+        &GetMessageStreamRequest::builder()
+            .stream_id(StreamIdOrName::StreamId("outbound".to_owned()))
+            .build(),
+    );
+}
+
+#[test]
+fn suppressions_dump() {
+    use postmark::api::message_streams::{GetSuppressionRequest, StreamIdOrName};
+    // A plain stream ID only: postmark-rs builds this path with `format!` and
+    // does not encode the ID. It also has none of the filter params.
+    assert_parity(
+        &["suppressions", "dump", "outbound"],
+        &GetSuppressionRequest::builder()
+            .stream_id(StreamIdOrName::StreamId("outbound".to_owned()))
+            .build(),
+    );
+}

@@ -23,3 +23,8 @@ and review the diff.
 | `bounces list` | GET | `/bounces` | server | offset, max 500, window 10000 | `Bounces` | `ListBouncesWithFiltersRequest` | Window: count + offset ≤ 10,000. |
 | `bounces get` | GET | `/bounces/{bounceid}` | server | none | — | `GetBounceRequest` |  |
 | `bounces dump` | GET | `/bounces/{bounceid}/dump` | server | none | — | `GetBounceDumpRequest` | Dumps are kept for 30 days. |
+| `templates list` | GET | `/templates` | server | offset, max 500 | `Templates` | `ListTemplatesRequest` |  |
+| `templates get` | GET | `/templates/{templateIdOrAlias}` | server | none | — | `GetTemplateRequest` | An ID or an alias. |
+| `streams list` | GET | `/message-streams` | server | none | `MessageStreams` | `ListMessageStreamsRequest` | Not paginated. |
+| `streams get` | GET | `/message-streams/{stream_ID}` | server | none | — | `GetMessageStreamRequest` |  |
+| `suppressions dump` | GET | `/message-streams/{stream_id}/suppressions/dump` | server | none | `Suppressions` | `GetSuppressionRequest` | Not paginated. |

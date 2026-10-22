@@ -16,6 +16,9 @@ use crate::cli::commands::opens::OpensCommand;
 use crate::cli::commands::outbound::OutboundCommand;
 use crate::cli::commands::server::ServerCommand;
 use crate::cli::commands::servers::ServersCommand;
+use crate::cli::commands::streams::StreamsCommand;
+use crate::cli::commands::suppressions::SuppressionsCommand;
+use crate::cli::commands::templates::TemplatesCommand;
 use crate::cli::exit::ExitStatus;
 use crate::client::{Executor, parse_base_url};
 use crate::error::Error;
@@ -155,6 +158,15 @@ enum Command {
     /// Bounces: counts by type, the list, one bounce, its raw source.
     #[command(subcommand)]
     Bounces(BouncesCommand),
+    /// Email templates and layouts.
+    #[command(subcommand)]
+    Templates(TemplatesCommand),
+    /// Message streams.
+    #[command(subcommand)]
+    Streams(StreamsCommand),
+    /// The addresses a stream will not send to.
+    #[command(subcommand)]
+    Suppressions(SuppressionsCommand),
     /// Describe every command as JSON: endpoint, token, paging and flags.
     /// Needs no network and no token.
     Commands,
@@ -171,6 +183,9 @@ impl Command {
             Command::Opens(command) => Some(command.leaf()),
             Command::Clicks(command) => Some(command.leaf()),
             Command::Bounces(command) => Some(command.leaf()),
+            Command::Templates(command) => Some(command.leaf()),
+            Command::Streams(command) => Some(command.leaf()),
+            Command::Suppressions(command) => Some(command.leaf()),
             Command::Commands => None,
         }
     }

@@ -7,6 +7,9 @@ pub(crate) mod opens;
 pub(crate) mod outbound;
 pub(crate) mod server;
 pub(crate) mod servers;
+pub(crate) mod streams;
+pub(crate) mod suppressions;
+pub(crate) mod templates;
 pub(crate) mod tracking;
 
 use crate::error::Error;
