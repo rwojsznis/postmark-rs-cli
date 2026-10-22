@@ -1,5 +1,6 @@
 //! One module per resource; one `Leaf` per endpoint (decision 11).
 
+pub(crate) mod bounces;
 pub(crate) mod clicks;
 pub(crate) mod inbound;
 pub(crate) mod opens;

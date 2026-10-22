@@ -9,6 +9,7 @@ pub mod out;
 pub(crate) mod page;
 
 use crate::cli::commands::Leaf;
+use crate::cli::commands::bounces::BouncesCommand;
 use crate::cli::commands::clicks::ClicksCommand;
 use crate::cli::commands::inbound::InboundCommand;
 use crate::cli::commands::opens::OpensCommand;
@@ -151,6 +152,9 @@ enum Command {
     /// Link clicks in sent messages: who, with which client, where.
     #[command(subcommand)]
     Clicks(ClicksCommand),
+    /// Bounces: counts by type, the list, one bounce, its raw source.
+    #[command(subcommand)]
+    Bounces(BouncesCommand),
     /// Describe every command as JSON: endpoint, token, paging and flags.
     /// Needs no network and no token.
     Commands,
@@ -166,6 +170,7 @@ impl Command {
             Command::Inbound(command) => Some(command.leaf()),
             Command::Opens(command) => Some(command.leaf()),
             Command::Clicks(command) => Some(command.leaf()),
+            Command::Bounces(command) => Some(command.leaf()),
             Command::Commands => None,
         }
     }

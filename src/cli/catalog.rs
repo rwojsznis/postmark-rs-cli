@@ -3,7 +3,7 @@
 //! the catalog come from clap's own `Command`, so they cannot drift from the
 //! parser.
 
-use crate::cli::commands::{clicks, inbound, opens, outbound, server, servers};
+use crate::cli::commands::{bounces, clicks, inbound, opens, outbound, server, servers};
 use crate::spec::{EndpointSpec, Pagination};
 use clap::Arg;
 use serde_json::{Value, json};
@@ -23,6 +23,10 @@ static REGISTRY: &[Entry] = &[
     (&["opens", "for-message"], &opens::FOR_MESSAGE),
     (&["clicks", "list"], &clicks::LIST),
     (&["clicks", "for-message"], &clicks::FOR_MESSAGE),
+    (&["bounces", "delivery-stats"], &bounces::DELIVERY_STATS),
+    (&["bounces", "list"], &bounces::LIST),
+    (&["bounces", "get"], &bounces::GET),
+    (&["bounces", "dump"], &bounces::DUMP),
 ];
 
 /// Every endpoint command: its path in the command tree, and its spec.

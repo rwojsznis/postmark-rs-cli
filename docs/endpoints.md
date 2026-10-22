@@ -19,3 +19,7 @@ and review the diff.
 | `opens for-message` | GET | `/messages/outbound/opens/{messageid}` | server | offset, max 500 | `Opens` | `SingleMessageOpensRequest` |  |
 | `clicks list` | GET | `/messages/outbound/clicks` | server | offset, max 500 | `Clicks` | `MessageClicksRequest` |  |
 | `clicks for-message` | GET | `/messages/outbound/clicks/{messageid}` | server | offset, max 500 | `Clicks` | `SingleMessageClicksRequest` |  |
+| `bounces delivery-stats` | GET | `/deliverystats` | server | none | — | `GetDeliveryStatsRequest` |  |
+| `bounces list` | GET | `/bounces` | server | offset, max 500, window 10000 | `Bounces` | `ListBouncesWithFiltersRequest` | Window: count + offset ≤ 10,000. |
+| `bounces get` | GET | `/bounces/{bounceid}` | server | none | — | `GetBounceRequest` |  |
+| `bounces dump` | GET | `/bounces/{bounceid}/dump` | server | none | — | `GetBounceDumpRequest` | Dumps are kept for 30 days. |

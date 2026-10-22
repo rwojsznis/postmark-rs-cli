@@ -258,3 +258,58 @@ fn opens_and_clicks_for_one_message() {
             .build(),
     );
 }
+
+#[test]
+fn bounces() {
+    use postmark::api::bounce::{
+        GetBounceDumpRequest, GetBounceRequest, GetDeliveryStatsRequest,
+        ListBouncesWithFiltersRequest,
+    };
+    assert_parity(&["bounces", "delivery-stats"], &GetDeliveryStatsRequest {});
+    assert_parity(
+        &[
+            "bounces",
+            "list",
+            "--count",
+            "25",
+            "--offset",
+            "75",
+            "--type",
+            "HardBounce",
+            "--inactive",
+            "true",
+            "--email-filter",
+            "a@b",
+            "--tag",
+            "t t",
+            "--message-id",
+            "m1",
+            "--message-stream",
+            "outbound",
+            "--from-date",
+            "2026-01-01",
+            "--to-date",
+            "2026-01-31T12:00:00",
+        ],
+        &ListBouncesWithFiltersRequest::builder()
+            .count(25)
+            .offset(75)
+            .r#type("HardBounce".to_owned())
+            .inactive(true)
+            .email_filter("a@b".to_owned())
+            .tag("t t".to_owned())
+            .message_id("m1".to_owned())
+            .message_stream("outbound".to_owned())
+            .from_date("2026-01-01".to_owned())
+            .to_date("2026-01-31T12:00:00".to_owned())
+            .build(),
+    );
+    assert_parity(
+        &["bounces", "get", "42"],
+        &GetBounceRequest::builder().bounce_id(42).build(),
+    );
+    assert_parity(
+        &["bounces", "dump", "42"],
+        &GetBounceDumpRequest::builder().bounce_id(42).build(),
+    );
+}

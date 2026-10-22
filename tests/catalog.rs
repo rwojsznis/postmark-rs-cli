@@ -13,11 +13,7 @@ use std::fmt::Write;
 /// The endpoints that have no command yet. Each endpoint task removes its
 /// paths; the list is empty once every GET endpoint has its command.
 const NOT_YET_IMPLEMENTED: &[&str] = &[
-    "/bounces",
-    "/bounces/{bounceid}",
-    "/bounces/{bounceid}/dump",
     "/data-removals/{id}",
-    "/deliverystats",
     "/domains",
     "/domains/{domainid}",
     "/email/bulk",
