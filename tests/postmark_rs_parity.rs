@@ -195,3 +195,66 @@ fn inbound_get() {
         &InboundDetailsRequest::new("abc".to_owned()),
     );
 }
+
+#[test]
+fn opens_and_clicks_lists() {
+    use postmark::api::messages::{MessageClicksRequest, MessageOpensRequest};
+    let argv = |kind| {
+        [
+            kind,
+            "list",
+            "--count",
+            "20",
+            "--offset",
+            "40",
+            "--recipient",
+            "a@example.com",
+            "--tag",
+            "t",
+            "--message-stream",
+            "s",
+        ]
+    };
+    assert_parity(
+        &argv("opens"),
+        &MessageOpensRequest::builder()
+            .count(20)
+            .offset(40)
+            .recipient("a@example.com".to_owned())
+            .tag("t".to_owned())
+            .message_stream("s".to_owned())
+            .build(),
+    );
+    assert_parity(
+        &argv("clicks"),
+        &MessageClicksRequest::builder()
+            .count(20)
+            .offset(40)
+            .recipient("a@example.com".to_owned())
+            .tag("t".to_owned())
+            .message_stream("s".to_owned())
+            .build(),
+    );
+}
+
+#[test]
+fn opens_and_clicks_for_one_message() {
+    use postmark::api::messages::{SingleMessageClicksRequest, SingleMessageOpensRequest};
+    // A plain ID: postmark-rs encodes the ID, then encodes the path again.
+    assert_parity(
+        &["opens", "for-message", "m1", "--count", "3"],
+        &SingleMessageOpensRequest::builder()
+            .message_id("m1".to_owned())
+            .count(3)
+            .offset(0)
+            .build(),
+    );
+    assert_parity(
+        &["clicks", "for-message", "m1"],
+        &SingleMessageClicksRequest::builder()
+            .message_id("m1".to_owned())
+            .count(50)
+            .offset(0)
+            .build(),
+    );
+}

@@ -15,3 +15,7 @@ and review the diff.
 | `outbound dump` | GET | `/messages/outbound/{messageid}/dump` | server | none | — | `OutboundDumpRequest` |  |
 | `inbound search` | GET | `/messages/inbound` | server | offset, max 500, window 10000 | `InboundMessages` | `InboundSearchRequest` | Window: count + offset ≤ 10,000. Default `status=processed`. |
 | `inbound get` | GET | `/messages/inbound/{messageid}/details` | server | none | — | `InboundDetailsRequest` |  |
+| `opens list` | GET | `/messages/outbound/opens` | server | offset, max 500, window 10000 | `Opens` | `MessageOpensRequest` | Window: count + offset ≤ 10,000. |
+| `opens for-message` | GET | `/messages/outbound/opens/{messageid}` | server | offset, max 500 | `Opens` | `SingleMessageOpensRequest` |  |
+| `clicks list` | GET | `/messages/outbound/clicks` | server | offset, max 500 | `Clicks` | `MessageClicksRequest` |  |
+| `clicks for-message` | GET | `/messages/outbound/clicks/{messageid}` | server | offset, max 500 | `Clicks` | `SingleMessageClicksRequest` |  |
