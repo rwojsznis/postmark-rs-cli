@@ -4,3 +4,4 @@ Cargo.lock.orig
 .idea/
 .vscode/
 .DS_Store
+lcov.info

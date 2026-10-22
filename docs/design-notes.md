@@ -357,21 +357,22 @@ The rule is **one pin per tool, read the same way locally and in CI.**
   |---|---|---|
   | cargo-llvm-cov | `aqua:taiki-e/cargo-llvm-cov` | 0.9.1 |
   | cargo-machete | `github:bnjbvr/cargo-machete` | 0.9.2 |
-  | cargo-audit | `cargo:cargo-audit` | 0.22.2 |
-  | cargo-binstall | `aqua:cargo-bins/cargo-binstall` | 1.26.0 |
+  | cargo-audit | `github:rustsec/rustsec` (`version_prefix = "cargo-audit/v"`) | 0.22.2 |
   | actionlint | `aqua:rhysd/actionlint` | 1.7.12 |
 
-  cargo-binstall is there so that the `cargo:` backend downloads a binary
-  instead of compiling one.
+  cargo-audit has no aqua package and no cargo-binstall metadata, so the
+  `cargo:` backend compiles it (over a minute, on every cold CI cache). The
+  rustsec repository attaches prebuilt binaries to its `cargo-audit/v*`
+  releases, and the `github:` backend downloads those. No `cargo:` tool is
+  left, so cargo-binstall is not needed.
 - **mise tasks are the single list of check commands:**
   - `fmt`, `clippy`, `doc`, `machete`, `audit`, and `lint` (all five)
-  - `test`
-  - `coverage`
+  - `test`, plus `test-release` and `test-doc` for CI's test matrix
+  - `coverage`, plus `coverage-lcov` for the Codecov upload
   - `actionlint`
   - `check`, which runs lint and test
 
-  `AGENTS.md` and the CI workflow call
-  these tasks. None of them repeats the cargo command lines.
+  `AGENTS.md` and the CI workflow call these tasks. None of them repeats the cargo command lines.
 - **CI** installs everything with `jdx/mise-action`, pinned by digest. So CI
   runs the same versions as a laptop. This replaces the reference's
   `rustup show active-toolchain` + `cargo install --version` steps, and

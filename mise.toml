@@ -6,9 +6,9 @@ idiomatic_version_file_enable_tools = ["rust"]
 [tools]
 "aqua:taiki-e/cargo-llvm-cov" = "0.9.1"
 "github:bnjbvr/cargo-machete" = "0.9.2"
-"cargo:cargo-audit" = "0.22.2"
-# Lets the `cargo:` backend download a binary instead of compiling one.
-"aqua:cargo-bins/cargo-binstall" = "1.26.0"
+# rustsec tags each crate's releases with its own prefix, and attaches the
+# prebuilt cargo-audit binaries to the `cargo-audit/v*` ones.
+"github:rustsec/rustsec" = { version = "0.22.2", version_prefix = "cargo-audit/v", bin = "cargo-audit" }
 "aqua:rhysd/actionlint" = "1.7.12"
 
 # The single list of check commands. AGENTS.md and CI call these tasks and do
@@ -35,8 +35,20 @@ depends = ["fmt", "clippy", "doc", "machete", "audit"]
 [tasks.test]
 run = "cargo test --locked --all-targets --quiet"
 
+# CI's test matrix runs these two after `test`. An optimized build can hide or
+# show a bug that a debug build does not.
+[tasks.test-release]
+run = "cargo test --locked --release --all-targets"
+
+[tasks.test-doc]
+run = "cargo test --locked --doc"
+
 [tasks.coverage]
 run = "cargo llvm-cov --locked --all-targets --summary-only"
+
+# The report CI uploads to Codecov.
+[tasks.coverage-lcov]
+run = "cargo llvm-cov --locked --all-targets --lcov --output-path lcov.info"
 
 [tasks.actionlint]
 # Passes before task 02 adds the workflows.

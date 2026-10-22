@@ -69,6 +69,18 @@ Do not report a change as finished until every one of them is green. If
 something is left failing or unfinished, say so explicitly rather than narrowing
 the scope quietly.
 
+## Coverage
+
+- `mise run coverage` prints the totals.
+  `mise exec -- cargo llvm-cov --all-targets --html --open` shows the uncovered
+  lines.
+- Coverage includes the `postmark-cli` processes that the integration tests
+  spawn: cargo-llvm-cov instruments the binary and sets `LLVM_PROFILE_FILE`
+  for it. That is why `env_clear()` is forbidden in tests (see Gotchas).
+- CI uploads `mise run coverage-lcov` to Codecov. After the first CI run,
+  `codecov-coverage-cli --all --sort misses` lists the lines Codecov reports as
+  not covered (`--diff main` for one branch).
+
 ## Toolchain
 
 mise manages Rust and every dev tool (decision 15).
@@ -81,7 +93,11 @@ mise manages Rust and every dev tool (decision 15).
   which overrides the file, so two pins could silently disagree. The dev tools
   are pinned in `mise.toml` `[tools]`.
 - Never install a dev tool with `cargo install` or Homebrew. If a tool is
-  missing, add it to `mise.toml`.
+  missing, add it to `mise.toml`, with a backend that downloads a prebuilt
+  binary (`aqua:` or `github:`).
+- CI installs the same pins with `jdx/mise-action`, and every CI step is a
+  mise task. Renovate bumps `rust-toolchain.toml` and `rust-version` together,
+  and the `mise.toml` tools through its `mise` manager.
 
 ## Where tests go
 
