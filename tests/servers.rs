@@ -282,3 +282,19 @@ fn a_missing_account_token_names_its_env_var() {
     assert!(message.contains("--account-token"), "{message}");
     assert_no_secret(&out);
 }
+
+#[test]
+fn limit_reached_on_the_first_page_prints_that_page_cut_to_n() {
+    let server = Server::run();
+    server.expect(
+        expect_get("/servers", "count=2&offset=0", Token::Account)
+            .respond_with(status_code(200).body(page(0..5, 5))),
+    );
+
+    let out = servers(&server, &["list", "--limit", "2"]);
+
+    assert_eq!(out.code, 0, "{out:?}");
+    let body = out.json();
+    assert_eq!(body["TotalCount"], 5);
+    assert_eq!(ids(body["Servers"].as_array().unwrap()), [0, 1]);
+}

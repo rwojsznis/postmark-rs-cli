@@ -191,9 +191,6 @@ impl Plan {
                 }
                 taken += 1;
             }
-            if self.limit == Some(taken) {
-                break Stop::Limit;
-            }
             let more = match self.mode {
                 Mode::Offset { .. } => {
                     offset = offset.saturating_add(received);
@@ -208,7 +205,11 @@ impl Plan {
                     more
                 }
             };
+            // Before any stop: the merged json is built on page 1.
             first.get_or_insert(body);
+            if self.limit == Some(taken) {
+                break Stop::Limit;
+            }
             if !more {
                 break Stop::Done;
             }
@@ -414,6 +415,18 @@ mod tests {
                 "/servers?count=2&offset=5&name=x"
             ]
         );
+    }
+
+    #[test]
+    fn a_limit_reached_on_the_first_page_keeps_that_page() {
+        let plan = Plan::new(&OFFSET, paging(None, 0, Some(2))).unwrap();
+
+        let out = drive(&plan, &base(&OFFSET, 50), vec![page(5, 0, 99)], usize::MAX);
+
+        assert_eq!(out.paged.stop, Stop::Limit);
+        assert_eq!(ids(&out.items), [0, 1]);
+        // The merged json is built on page 1; without it, `--limit` prints null.
+        assert_eq!(out.paged.first, Some(page(5, 0, 99)));
     }
 
     #[test]
