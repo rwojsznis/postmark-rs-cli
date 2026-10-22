@@ -31,3 +31,11 @@ fn no_arguments_is_a_usage_error() {
     let out = run(&[]);
     assert_eq!(out.status.code(), Some(2));
 }
+
+#[test]
+fn a_timeout_outside_one_second_to_one_hour_is_a_usage_error() {
+    for timeout in ["0", "3601", "x"] {
+        let out = run(&["server", "get", "--dry-run", "--timeout", timeout]);
+        assert_eq!(out.status.code(), Some(2), "{timeout}");
+    }
+}

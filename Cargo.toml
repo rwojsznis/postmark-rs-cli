@@ -18,6 +18,7 @@ http = "1.5.0"
 percent-encoding = "2.3.2"
 postmark = { version = "2.0.1", default-features = false, features = ["reqwest-rustls-tls"] }
 serde_json = { version = "1.0.154", features = ["preserve_order"] }
+tokio = { version = "1.54.1", default-features = false, features = ["rt", "time"] }
 url = "2.5.8"
 
 [lib]
@@ -52,3 +53,6 @@ unreachable_pub = "warn"
 
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
+
+[dev-dependencies]
+httptest = "0.16.4"

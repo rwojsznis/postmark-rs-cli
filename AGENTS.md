@@ -30,14 +30,20 @@ by number ("decision 5").
 
 | Path | What |
 |---|---|
-| `src/main.rs` | Entry point: run, choose the exit code |
+| `src/main.rs` | Entry point: run, print the error line, choose the exit code |
 | `src/lib.rs` | Module list and the panic-family lints |
+| `src/client.rs` | `Executor`: one token per request, the timeout, `--verbose`, `QueryError` → `Error`; `--base-url` validation |
+| `src/error.rs` | `Error`, its kinds, exit codes, the JSON error line (decision 5) |
+| `src/output.rs` | `Format`, json/jsonl rendering (decisions 3, 4) |
 | `src/request.rs` | `GetRequest`: path-segment encoding, the query builder, the `postmark::Endpoint` impl (decisions 1, 2) |
 | `src/spec.rs` | `EndpointSpec`, `TokenKind`, `Pagination` |
-| `src/cli/mod.rs` | `Cli` and the dispatch |
+| `src/cli/mod.rs` | `Cli`, the global flags, the `Command` enum, the one dispatcher (`--dry-run`, the runtime, printing) |
+| `src/cli/commands/mod.rs` | The `Leaf` trait: `spec()` + a pure `request()` per endpoint (decision 11) |
+| `src/cli/commands/<resource>.rs` | One file per resource: clap args, a `static` spec per leaf, unit tests for `request()` |
 | `src/cli/exit.rs` | The exit codes, as a type (decision 5) |
 | `src/cli/out.rs` | Writes that are safe on a broken pipe, and the print macros |
-| `tests/` | Integration tests; they run the real binary |
+| `tests/common/mod.rs` | The harness: `cli()`/`run()`, `expect_get` for the mock, the sentinel token, `assert_no_secret` |
+| `tests/<resource>.rs` | Integration tests per resource; `tests/errors.rs` for every error path |
 | `docs/` | Design notes |
 
 Unit tests live in `#[cfg(test)] mod tests` next to the code; cross-cutting and
@@ -119,8 +125,19 @@ mise manages Rust and every dev tool (decision 15).
   envelope, no renamed or removed keys, no colors, no tables. The bytes are the
   same on a terminal and on a pipe.
 - **Exit codes** (decision 5): **0** success (also when stdout closed early),
-  **1** Postmark returned a non-2xx status, **2** usage or configuration error,
-  **3** transport failure. An error is exactly one JSON line on stderr.
+  **1** Postmark returned a non-2xx status (`api`), **2** usage or
+  configuration error (`config`; clap's own usage errors keep clap's text),
+  **3** transport failure (`transport`, `timeout`, `decode`).
+- **An error is exactly one JSON line on stderr and nothing on stdout:**
+  `{"error":{"kind","message","status","error_code","body","request"}}`.
+  `status`/`error_code`/`body` are for `api` only; `request` is there whenever
+  a request was built. `--verbose` lines are JSON too: `{"request":{...}}`
+  before and `{"response":{"status","ms"}}` after each request.
+- **stdout:** `--format json` is pretty (2-space indent, trailing newline);
+  `jsonl` is one compact value per line. `serde_json`'s `preserve_order` keeps
+  Postmark's key order. Print through `output::print`, never `println!`.
+- A new error path needs a case in `tests/errors.rs` that runs with the
+  sentinel token and calls `assert_no_secret`.
 - **Tokens never appear** in stdout, stderr, `--dry-run`, `--verbose` or an
   error message (decision 6). The client gets only the token its endpoint
   needs.

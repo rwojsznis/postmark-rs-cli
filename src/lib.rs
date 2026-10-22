@@ -10,5 +10,8 @@
 #![warn(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 pub mod cli;
+pub mod client;
+pub mod error;
+pub mod output;
 pub mod request;
 pub mod spec;
