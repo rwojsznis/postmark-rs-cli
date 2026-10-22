@@ -5,3 +5,6 @@ Cargo.lock.orig
 .vscode/
 .DS_Store
 lcov.info
+
+# Local mise overrides, e.g. Postmark tokens for trying the CLI. Never commit.
+mise.local.toml
