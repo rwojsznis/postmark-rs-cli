@@ -1,4 +1,5 @@
 # postmark-cli
+[![Release](https://img.shields.io/github/v/release/rwojsznis/postmark-rs-cli)](https://github.com/rwojsznis/postmark-rs-cli/releases/latest)
 [![codecov](https://codecov.io/gh/rwojsznis/postmark-rs-cli/graph/badge.svg)](https://codecov.io/gh/rwojsznis/postmark-rs-cli)
 [![CI](https://github.com/rwojsznis/postmark-rs-cli/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rwojsznis/postmark-rs-cli/actions/workflows/ci.yml?query=branch%3Amain)
 
@@ -15,9 +16,39 @@ or changes anything, so an agent can run any command without asking first.
 
 ## Install
 
-Download a binary for macOS or Linux from the
-[latest release](https://github.com/rwojsznis/postmark-rs-cli/releases/latest),
-unpack it, and put `postmark-cli` on your `PATH`. Or build it:
+Each [release](https://github.com/rwojsznis/postmark-rs-cli/releases/latest)
+has one archive per platform, and a `SHA256SUMS` file:
+
+| Platform | Archive |
+|---|---|
+| macOS, Apple silicon | `postmark-cli-aarch64-apple-darwin.tar.gz` |
+| macOS, Intel | `postmark-cli-x86_64-apple-darwin.tar.gz` |
+| Linux x86_64, static (any distribution) | `postmark-cli-x86_64-unknown-linux-musl.tar.gz` |
+| Linux x86_64, glibc | `postmark-cli-x86_64-unknown-linux-gnu.tar.gz` |
+
+Download the archive for your platform, verify it, and put `postmark-cli` on
+your `PATH`:
+
+```bash
+TARGET=aarch64-apple-darwin   # one of the targets in the table above
+BASE=https://github.com/rwojsznis/postmark-rs-cli/releases/latest/download
+curl -fLO "$BASE/postmark-cli-$TARGET.tar.gz"
+curl -fLO "$BASE/SHA256SUMS"
+
+# Linux: sha256sum --check --ignore-missing SHA256SUMS
+shasum -a 256 --check --ignore-missing SHA256SUMS
+
+tar -xzf "postmark-cli-$TARGET.tar.gz"
+mkdir -p ~/.local/bin && mv postmark-cli ~/.local/bin/
+postmark-cli --version
+```
+
+The macOS binaries are not signed. `curl` does not mark the download, so
+macOS runs the binary. If you download it with a browser instead, remove the
+quarantine flag first: `xattr -d com.apple.quarantine postmark-cli`.
+
+Or build it from source (`postmark-cli --version` then shows `0.0.0`, because
+release builds get their version from the Git tag):
 
 ```bash
 cargo install --git https://github.com/rwojsznis/postmark-rs-cli --locked
