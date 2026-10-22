@@ -10,10 +10,6 @@ use postmark_cli::spec::{EndpointSpec, Pagination};
 use std::collections::BTreeSet;
 use std::fmt::Write;
 
-/// The endpoints that have no command yet. Each endpoint task removes its
-/// paths; the list is empty once every GET endpoint has its command.
-const NOT_YET_IMPLEMENTED: &[&str] = &[];
-
 /// Every leaf of the clap tree, as its command path.
 fn leaves(cmd: &clap::Command, prefix: &[String], out: &mut Vec<Vec<String>>) {
     for sub in cmd.get_subcommands() {
@@ -55,25 +51,41 @@ fn no_path_and_no_command_is_registered_twice() {
 }
 
 #[test]
-fn the_registry_and_the_not_yet_list_together_are_the_44_endpoints() {
+fn the_registry_is_the_44_endpoints_of_the_docs() {
     let fixture: BTreeSet<&str> = include_str!("fixtures/get-endpoints.txt").lines().collect();
     assert_eq!(fixture.len(), 44);
     let registered: BTreeSet<&str> = registry().iter().map(|(_, spec)| spec.path).collect();
-    let pending: BTreeSet<&str> = NOT_YET_IMPLEMENTED.iter().copied().collect();
-    assert_eq!(
-        pending.len(),
-        NOT_YET_IMPLEMENTED.len(),
-        "a duplicate in NOT_YET_IMPLEMENTED"
-    );
-    assert_eq!(
-        registered.intersection(&pending).collect::<Vec<_>>(),
-        Vec::<&&str>::new(),
-        "implemented, so remove it from NOT_YET_IMPLEMENTED"
-    );
-    assert_eq!(
-        registered.union(&pending).copied().collect::<BTreeSet<_>>(),
-        fixture
-    );
+    assert_eq!(registered, fixture);
+}
+
+#[test]
+fn every_example_dry_runs_to_its_own_path() {
+    for (path, spec) in registry() {
+        let mut args: Vec<&str> = spec.example.split_whitespace().skip(1).collect();
+        args.push("--dry-run");
+        let out = run(&args, &[]);
+        assert_eq!(out.code, 0, "{path:?}: {out:?}");
+        let url = out.json()["url"].as_str().unwrap().to_owned();
+        let sent = url
+            .strip_prefix("https://api.postmarkapp.com")
+            .unwrap()
+            .split('?')
+            .next()
+            .unwrap()
+            .to_owned();
+        // Every `{...}` in the template matches one non-empty segment.
+        let template: Vec<&str> = spec.path.split('/').collect();
+        let segments: Vec<&str> = sent.split('/').collect();
+        assert_eq!(template.len(), segments.len(), "{path:?}: {url}");
+        for (want, got) in template.iter().zip(&segments) {
+            if want.starts_with('{') {
+                assert!(!got.is_empty(), "{path:?}: {url}");
+            } else {
+                assert_eq!(want, got, "{path:?}: {url}");
+            }
+        }
+        assert_eq!(out.json()["token"], spec.token.as_str(), "{path:?}");
+    }
 }
 
 #[test]
@@ -165,6 +177,8 @@ fn the_catalog_lists_every_command_as_get() {
     assert_eq!(catalog["version"], env!("CARGO_PKG_VERSION"));
 
     let commands = catalog["commands"].as_array().unwrap();
+    // Endpoint commands only: not `commands` itself, not `help`.
+    assert_eq!(commands.len(), 44);
     assert_eq!(commands.len(), registry().len());
     for (entry, (path, spec)) in commands.iter().zip(registry()) {
         assert_eq!(entry["command"], path.join(" "));

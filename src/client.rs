@@ -85,7 +85,7 @@ impl Executor {
         let started = Instant::now();
         let result = match tokio::time::timeout(self.timeout, request.execute(&client)).await {
             Ok(Ok(value)) => Ok(value),
-            Ok(Err(error)) => Err(from_query_error(error)),
+            Ok(Err(error)) => Err(from_query_error(error, spec.token)),
             Err(_) => Err(Error::new(ErrorKind::Timeout {
                 seconds: self.timeout.as_secs(),
             })),
@@ -131,14 +131,14 @@ impl Executor {
     }
 }
 
-fn from_query_error(error: QueryError<PostmarkClientError>) -> Error {
+fn from_query_error(error: QueryError<PostmarkClientError>, token: TokenKind) -> Error {
     match error {
         QueryError::Api {
             status,
             error_code,
             message,
             body,
-        } => Error::api(status.as_u16(), error_code, message, &body),
+        } => Error::api(status.as_u16(), error_code, message, &body, token),
         // reqwest's messages name the URL, never the headers, so no token.
         QueryError::Client { source } => Error::transport(describe(&source)),
         QueryError::Body { source } => Error::transport(describe(&source)),
@@ -232,7 +232,7 @@ mod tests {
     #[test]
     fn a_body_error_is_a_transport_error() {
         let source = http::Request::builder().uri("\n").body(()).unwrap_err();
-        let error = from_query_error(QueryError::Body { source });
+        let error = from_query_error(QueryError::Body { source }, TokenKind::Server);
         assert_eq!(error.kind_name(), "transport");
     }
 }

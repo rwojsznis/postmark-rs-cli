@@ -8,6 +8,7 @@
 
 use crate::cli::exit::ExitStatus;
 use crate::request::RequestError;
+use crate::spec::TokenKind;
 use serde_json::{Map, Value, json};
 use url::Url;
 
@@ -37,6 +38,8 @@ pub enum ErrorKind {
         status: u16,
         error_code: Option<i64>,
         message: Option<String>,
+        /// What to do about a known error code, for an agent to act on.
+        hint: Option<String>,
         /// The parsed body when it is JSON, otherwise the text, cut to 4 KiB.
         body: Value,
     },
@@ -69,13 +72,22 @@ impl Error {
         Error::new(ErrorKind::Transport(message.into()))
     }
 
-    /// An API error from the raw response body.
+    /// An API error from the raw response body, with the hint for its error
+    /// code. `token` is the token the endpoint needs, which the token hints
+    /// name.
     #[must_use]
-    pub fn api(status: u16, error_code: Option<i64>, message: Option<String>, body: &[u8]) -> Self {
+    pub fn api(
+        status: u16,
+        error_code: Option<i64>,
+        message: Option<String>,
+        body: &[u8],
+        token: TokenKind,
+    ) -> Self {
         Error::new(ErrorKind::Api {
             status,
             error_code,
             message,
+            hint: hint(status, error_code, token),
             body: body_value(body),
         })
     }
@@ -140,10 +152,14 @@ impl Error {
         if let ErrorKind::Api {
             status,
             error_code,
+            hint,
             body,
             ..
         } = &self.0.kind
         {
+            if let Some(hint) = hint {
+                error.insert("hint".into(), hint.clone().into());
+            }
             error.insert("status".into(), (*status).into());
             error.insert("error_code".into(), (*error_code).into());
             error.insert("body".into(), body.clone());
@@ -162,6 +178,38 @@ impl From<RequestError> for Error {
     fn from(error: RequestError) -> Self {
         Error::config(error.to_string())
     }
+}
+
+/// What to do about the Postmark error codes an agent can act on (the Gotchas
+/// of the API reference). One arm per code; anything else gets no hint.
+fn hint(status: u16, error_code: Option<i64>, token: TokenKind) -> Option<String> {
+    let hint = match (error_code, status) {
+        (Some(10), _) | (None, 401) => {
+            return Some(format!(
+                "Check {} (or {}): this command needs the {} token, and the one sent is \
+                 missing, not valid, or the other kind of token.",
+                token.env_var(),
+                token.flag(),
+                token.as_str()
+            ));
+        }
+        (Some(12), _) => {
+            "The bulk request does not exist, or it belongs to another server: check the ID \
+             and the server token."
+        }
+        (Some(13), _) => {
+            "Pass PaginationKey back exactly as Postmark sent it: do not change, decode or pad it."
+        }
+        (Some(14), _) => "The account is not approved for the Bulk API: ask Postmark support.",
+        (Some(600 | 800), _) => "Use --count 500 or less.",
+        (Some(614), _) => {
+            "The account's plan does not include this feature (the Stats API, for example), \
+             or a limit is reached."
+        }
+        (Some(1500), _) => "--from-date cannot be more than one year ago.",
+        _ => return None,
+    };
+    Some(hint.to_owned())
 }
 
 fn body_value(body: &[u8]) -> Value {
@@ -205,7 +253,11 @@ mod tests {
     #[test]
     fn each_kind_has_the_exit_code_of_decision_5() {
         let cases = [
-            (Error::api(500, None, None, b""), "api", ExitStatus::Api),
+            (
+                Error::api(500, None, None, b"", TokenKind::Server),
+                "api",
+                ExitStatus::Api,
+            ),
             (Error::config("x"), "config", ExitStatus::Usage),
             (Error::transport("x"), "transport", ExitStatus::Transport),
             (
@@ -232,6 +284,7 @@ mod tests {
             Some(701),
             Some("Message not found".into()),
             br#"{"ErrorCode":701,"Message":"Message not found"}"#,
+            TokenKind::Server,
         )
         .at(url());
         assert_eq!(
@@ -256,6 +309,36 @@ mod tests {
                 "request": {"method": "GET", "url": "https://api.postmarkapp.com/server"}
             }})
         );
+    }
+
+    #[test]
+    fn known_error_codes_have_a_hint() {
+        let hint_for = |status, code, token| {
+            let error = Error::api(status, code, None, b"", token);
+            error.to_json()["error"]["hint"].as_str().map(String::from)
+        };
+        let server = hint_for(401, Some(10), TokenKind::Server).unwrap();
+        assert!(server.contains("POSTMARK_SERVER_TOKEN"), "{server}");
+        assert!(server.contains("--server-token"), "{server}");
+        let account = hint_for(401, Some(10), TokenKind::Account).unwrap();
+        assert!(account.contains("POSTMARK_ACCOUNT_TOKEN"), "{account}");
+        // A 401 without a code is the same advice.
+        assert_eq!(hint_for(401, None, TokenKind::Server), Some(server));
+        let cases = [
+            (404, 12, "another server"),
+            (422, 13, "exactly as Postmark sent it"),
+            (422, 14, "Bulk API"),
+            (422, 600, "--count 500"),
+            (422, 800, "--count 500"),
+            (422, 614, "plan"),
+            (422, 1500, "one year"),
+        ];
+        for (status, code, needle) in cases {
+            let hint = hint_for(status, Some(code), TokenKind::Server).unwrap();
+            assert!(hint.contains(needle), "{code}: {hint}");
+        }
+        assert_eq!(hint_for(422, Some(300), TokenKind::Server), None);
+        assert_eq!(hint_for(500, None, TokenKind::Server), None);
     }
 
     #[test]

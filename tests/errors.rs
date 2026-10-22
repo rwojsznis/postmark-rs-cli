@@ -107,8 +107,18 @@ fn an_api_error_carries_the_status_the_error_code_and_the_parsed_body() {
     let keys: Vec<_> = error.as_object().unwrap().keys().cloned().collect();
     assert_eq!(
         keys,
-        ["kind", "message", "status", "error_code", "body", "request"]
+        [
+            "kind",
+            "message",
+            "hint",
+            "status",
+            "error_code",
+            "body",
+            "request"
+        ]
     );
+    let hint = error["hint"].as_str().unwrap();
+    assert!(hint.contains("POSTMARK_SERVER_TOKEN"), "{hint}");
 }
 
 #[test]
@@ -124,6 +134,10 @@ fn a_body_that_is_not_json_is_kept_as_a_string_of_at_most_4_kib() {
     assert_eq!(error["status"], 500);
     assert_eq!(error["error_code"], serde_json::Value::Null);
     assert_eq!(error["message"], "Postmark returned 500");
+    assert!(
+        error.get("hint").is_none(),
+        "no hint for an unknown failure"
+    );
     let body = error["body"].as_str().unwrap();
     assert!(body.starts_with("<html>é"), "{body}");
     assert!(body.len() <= 4096, "{} bytes", body.len());

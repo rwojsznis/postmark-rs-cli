@@ -43,12 +43,14 @@ run = "cargo test --locked --release --all-targets"
 [tasks.test-doc]
 run = "cargo test --locked --doc"
 
+# The line-coverage floor: the measured coverage rounded down. It only goes
+# up (AGENTS.md, Coverage).
 [tasks.coverage]
-run = "cargo llvm-cov --locked --all-targets --summary-only"
+run = "cargo llvm-cov --locked --all-targets --summary-only --fail-under-lines 99"
 
 # The report CI uploads to Codecov.
 [tasks.coverage-lcov]
-run = "cargo llvm-cov --locked --all-targets --lcov --output-path lcov.info"
+run = "cargo llvm-cov --locked --all-targets --lcov --output-path lcov.info --fail-under-lines 99"
 
 [tasks.actionlint]
 # Passes before task 02 adds the workflows.

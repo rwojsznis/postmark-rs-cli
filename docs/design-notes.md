@@ -94,6 +94,10 @@ An error prints exactly one JSON line on stderr and nothing on stdout:
   the parsed JSON when the body is JSON. Otherwise it is a string, cut to
   4 KiB.
 - `request` is present whenever a request was built.
+- `hint` is present for the API error codes an agent can act on (a bad or
+  missing token, Bulk API not enabled, a changed pagination key, a plan
+  without the feature, a date too old, a count too high). The table is in
+  `src/error.rs`.
 - A token never appears in any output (decision 6).
 - Warnings that do not fail the run (for example the pagination ceiling) are
   one JSON line on stderr: `{"warning":{"kind":"...","message":"..."}}`.

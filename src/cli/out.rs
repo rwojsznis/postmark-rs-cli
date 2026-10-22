@@ -107,6 +107,7 @@ mod tests {
     fn a_closed_pipe_reports_closed() {
         let mut w = Failing(ErrorKind::BrokenPipe);
         assert!(!write_to(&mut w, format_args!("x"), "test"));
+        assert!(w.flush().is_ok());
     }
 
     #[test]
