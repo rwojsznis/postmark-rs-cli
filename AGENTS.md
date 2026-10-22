@@ -32,6 +32,8 @@ by number ("decision 5").
 |---|---|
 | `src/main.rs` | Entry point: run, choose the exit code |
 | `src/lib.rs` | Module list and the panic-family lints |
+| `src/request.rs` | `GetRequest`: path-segment encoding, the query builder, the `postmark::Endpoint` impl (decisions 1, 2) |
+| `src/spec.rs` | `EndpointSpec`, `TokenKind`, `Pagination` |
 | `src/cli/mod.rs` | `Cli` and the dispatch |
 | `src/cli/exit.rs` | The exit codes, as a type (decision 5) |
 | `src/cli/out.rs` | Writes that are safe on a broken pipe, and the print macros |
