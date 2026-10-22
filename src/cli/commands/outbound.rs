@@ -74,8 +74,10 @@ pub(crate) struct SearchArgs {
     #[arg(long, value_name = "TEXT")]
     subject: Option<String>,
 
-    /// Only messages in this stream (sends `messagestream`). Postmark's
-    /// default is `outbound`, the transactional stream.
+    // The docs say the default is `outbound`; the live API searches every
+    // stream.
+    /// Only messages in this stream (sends `messagestream`). Left out, the
+    /// search covers all streams.
     #[arg(long, value_name = "ID")]
     message_stream: Option<String>,
 

@@ -27,7 +27,7 @@ pub(crate) struct StatsFilters {
     to_date: Option<String>,
 
     /// Only this stream (sends `messagestream`). Left out, the stats cover
-    /// all streams, unlike messages and bounces, where it means `outbound`.
+    /// all streams.
     #[arg(long, value_name = "ID")]
     message_stream: Option<String>,
 }

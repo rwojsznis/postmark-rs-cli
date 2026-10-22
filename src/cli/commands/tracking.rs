@@ -14,8 +14,8 @@ pub(crate) struct TrackingFilters {
     #[arg(long)]
     tag: Option<String>,
 
-    /// Only events in this stream (sends `messagestream`). Postmark's default
-    /// is `outbound`, the transactional stream.
+    /// Only events in this stream (sends `messagestream`). Left out, the list
+    /// covers all streams.
     #[arg(long, value_name = "ID")]
     message_stream: Option<String>,
 

@@ -139,8 +139,10 @@ pub(crate) struct ListArgs {
     #[command(flatten)]
     dates: DateTimeRange,
 
-    /// Only bounces in this stream (sends `messagestream`). Postmark's default
-    /// is `outbound`, the transactional stream.
+    // The docs say the default is `outbound`; the live API lists every
+    // stream.
+    /// Only bounces in this stream (sends `messagestream`). Left out, the list
+    /// covers all streams.
     #[arg(long, value_name = "ID")]
     message_stream: Option<String>,
 }

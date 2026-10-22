@@ -143,6 +143,28 @@ fn each_leaf_help_names_its_endpoint_token_and_example() {
     }
 }
 
+/// The live API returns every stream when `messagestream` is left out, for
+/// messages and bounces as for stats, although the docs say `outbound`.
+#[test]
+fn each_messagestream_help_says_left_out_means_all_streams() {
+    let root = command();
+    let mut checked = 0;
+    for (path, _) in registry() {
+        let cmd = leaf(&root, path);
+        let Some(arg) = cmd.get_arguments().find(|a| a.get_id() == "message_stream") else {
+            continue;
+        };
+        let help = arg.get_help().unwrap().to_string();
+        if !help.contains("`messagestream`") {
+            continue;
+        }
+        assert!(help.contains("all streams"), "{path:?}: {help}");
+        assert!(!help.contains("`outbound`"), "{path:?}: {help}");
+        checked += 1;
+    }
+    assert_eq!(checked, 16);
+}
+
 #[test]
 fn top_level_help_states_the_contract() {
     let out = run(&["--help"], &[]);
