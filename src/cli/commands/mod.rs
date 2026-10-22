@@ -1,5 +1,7 @@
 //! One module per resource; one `Leaf` per endpoint (decision 11).
 
+pub(crate) mod inbound;
+pub(crate) mod outbound;
 pub(crate) mod server;
 pub(crate) mod servers;
 

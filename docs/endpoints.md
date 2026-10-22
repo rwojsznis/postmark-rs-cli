@@ -10,3 +10,8 @@ and review the diff.
 | `server get` | GET | `/server` | server | none | — | `GetCurrentServerRequest` | The server that owns the token. |
 | `servers list` | GET | `/servers` | account | offset, max 500 | `Servers` | `ListServersRequest` | postmark-rs sends no `name`. |
 | `servers get` | GET | `/servers/{serverid}` | account | none | — | `GetServerRequest` |  |
+| `outbound search` | GET | `/messages/outbound` | server | offset, max 500, window 10000 | `Messages` | `OutboundSearchRequest` | Window: count + offset ≤ 10,000. |
+| `outbound get` | GET | `/messages/outbound/{messageid}/details` | server | none | — | `OutboundDetailsRequest` |  |
+| `outbound dump` | GET | `/messages/outbound/{messageid}/dump` | server | none | — | `OutboundDumpRequest` |  |
+| `inbound search` | GET | `/messages/inbound` | server | offset, max 500, window 10000 | `InboundMessages` | `InboundSearchRequest` | Window: count + offset ≤ 10,000. Default `status=processed`. |
+| `inbound get` | GET | `/messages/inbound/{messageid}/details` | server | none | — | `InboundDetailsRequest` |  |

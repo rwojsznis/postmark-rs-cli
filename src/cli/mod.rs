@@ -1,6 +1,7 @@
 //! The command line: the global flags, the command tree, and the one
 //! dispatcher every leaf goes through (decision 11).
 
+pub(crate) mod args;
 pub mod catalog;
 pub(crate) mod commands;
 pub mod exit;
@@ -8,6 +9,8 @@ pub mod out;
 pub(crate) mod page;
 
 use crate::cli::commands::Leaf;
+use crate::cli::commands::inbound::InboundCommand;
+use crate::cli::commands::outbound::OutboundCommand;
 use crate::cli::commands::server::ServerCommand;
 use crate::cli::commands::servers::ServersCommand;
 use crate::cli::exit::ExitStatus;
@@ -134,6 +137,12 @@ enum Command {
     /// The servers of the account (account token).
     #[command(subcommand)]
     Servers(ServersCommand),
+    /// Sent messages: search, details, raw source.
+    #[command(subcommand)]
+    Outbound(OutboundCommand),
+    /// Received messages: search, details.
+    #[command(subcommand)]
+    Inbound(InboundCommand),
     /// Describe every command as JSON: endpoint, token, paging and flags.
     /// Needs no network and no token.
     Commands,
@@ -145,6 +154,8 @@ impl Command {
         match self {
             Command::Server(command) => Some(command.leaf()),
             Command::Servers(command) => Some(command.leaf()),
+            Command::Outbound(command) => Some(command.leaf()),
+            Command::Inbound(command) => Some(command.leaf()),
             Command::Commands => None,
         }
     }

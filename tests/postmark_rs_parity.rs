@@ -114,3 +114,84 @@ fn a_template_alias_is_one_segment() {
         .build();
     assert_eq!(ours.endpoint(), theirs.endpoint());
 }
+
+#[test]
+fn outbound_search() {
+    use postmark::api::messages::OutboundSearchRequest;
+    assert_parity(
+        &["outbound", "search"],
+        &OutboundSearchRequest::builder().count(50).offset(0).build(),
+    );
+    assert_parity(
+        &[
+            "outbound",
+            "search",
+            "--count",
+            "20",
+            "--offset",
+            "40",
+            "--recipient",
+            "user@example.com",
+            "--tag",
+            "one two",
+            "--message-stream",
+            "outbound",
+        ],
+        &OutboundSearchRequest::builder()
+            .count(20)
+            .offset(40)
+            .recipient("user@example.com".to_owned())
+            .tag("one two".to_owned())
+            .message_stream("outbound".to_owned())
+            .build(),
+    );
+}
+
+#[test]
+fn outbound_get_and_dump() {
+    use postmark::api::messages::{OutboundDetailsRequest, OutboundDumpRequest};
+    let id = "07311c54-0687-4ab9-b034-b54b5bad88ba";
+    assert_parity(
+        &["outbound", "get", id],
+        &OutboundDetailsRequest::new(id.to_owned()),
+    );
+    assert_parity(
+        &["outbound", "dump", id],
+        &OutboundDumpRequest::new(id.to_owned()),
+    );
+}
+
+#[test]
+fn inbound_search() {
+    use postmark::api::messages::InboundSearchRequest;
+    // Not `to`: postmark-rs sends it, the docs do not have it.
+    assert_parity(
+        &[
+            "inbound",
+            "search",
+            "--count",
+            "5",
+            "--offset",
+            "10",
+            "--mailbox-hash",
+            "h@sh",
+            "--subject",
+            "Re: hi",
+        ],
+        &InboundSearchRequest::builder()
+            .count(5)
+            .offset(10)
+            .mailbox_hash("h@sh".to_owned())
+            .subject("Re: hi".to_owned())
+            .build(),
+    );
+}
+
+#[test]
+fn inbound_get() {
+    use postmark::api::messages::InboundDetailsRequest;
+    assert_parity(
+        &["inbound", "get", "abc"],
+        &InboundDetailsRequest::new("abc".to_owned()),
+    );
+}
