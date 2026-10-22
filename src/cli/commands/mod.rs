@@ -3,10 +3,13 @@
 pub(crate) mod bounces;
 pub(crate) mod bulk;
 pub(crate) mod clicks;
+pub(crate) mod data_removals;
+pub(crate) mod domains;
 pub(crate) mod inbound;
 pub(crate) mod inbound_rules;
 pub(crate) mod opens;
 pub(crate) mod outbound;
+pub(crate) mod senders;
 pub(crate) mod server;
 pub(crate) mod servers;
 pub(crate) mod stats;

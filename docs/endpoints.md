@@ -46,3 +46,8 @@ and review the diff.
 | `stats clicks-browser-families` | GET | `/stats/outbound/clicks/browserfamilies` | server | none | — | `GetBrowserUsageRequest` |  |
 | `stats clicks-platforms` | GET | `/stats/outbound/clicks/platforms` | server | none | — | `GetBrowserPlatformUsageRequest` |  |
 | `stats clicks-location` | GET | `/stats/outbound/clicks/location` | server | none | — | `GetClickLocationRequest` |  |
+| `domains list` | GET | `/domains` | account | offset, max 500 | `Domains` | `ListDomainsRequest` |  |
+| `domains get` | GET | `/domains/{domainid}` | account | none | — | `GetDomainRequest` |  |
+| `senders list` | GET | `/senders` | account | offset, max 500 | `SenderSignatures` | `ListSignaturesRequest` |  |
+| `senders get` | GET | `/senders/{signatureid}` | account | none | — | `GetSignatureRequest` |  |
+| `data-removals get` | GET | `/data-removals/{id}` | account | none | — | `GetDataRemovalStatusRequest` | Available on request only. |

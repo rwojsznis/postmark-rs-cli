@@ -491,3 +491,32 @@ fn stats() {
         &GetClickLocationRequest::builder().query(q()).build(),
     );
 }
+
+#[test]
+fn account_api() {
+    use postmark::api::data_removal::GetDataRemovalStatusRequest;
+    use postmark::api::domains::{GetDomainRequest, ListDomainsRequest};
+    use postmark::api::signatures::{GetSignatureRequest, ListSignaturesRequest};
+    assert_parity(
+        &["domains", "list", "--count", "7", "--offset", "14"],
+        &ListDomainsRequest::builder().count(7).offset(14).build(),
+    );
+    assert_parity(
+        &["domains", "get", "36735"],
+        &GetDomainRequest::builder().domain_id(36735).build(),
+    );
+    assert_parity(
+        &["senders", "list", "--count", "7", "--offset", "14"],
+        &ListSignaturesRequest::builder().count(7).offset(14).build(),
+    );
+    assert_parity(
+        &["senders", "get", "1"],
+        &GetSignatureRequest::builder().signature_id(1).build(),
+    );
+    assert_parity(
+        &["data-removals", "get", "1234"],
+        &GetDataRemovalStatusRequest::builder()
+            .data_removal_id(1234)
+            .build(),
+    );
+}

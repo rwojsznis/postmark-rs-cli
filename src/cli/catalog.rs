@@ -4,8 +4,8 @@
 //! parser.
 
 use crate::cli::commands::{
-    bounces, bulk, clicks, inbound, inbound_rules, opens, outbound, server, servers, stats,
-    streams, suppressions, templates, webhooks,
+    bounces, bulk, clicks, data_removals, domains, inbound, inbound_rules, opens, outbound,
+    senders, server, servers, stats, streams, suppressions, templates, webhooks,
 };
 use crate::spec::{EndpointSpec, Pagination};
 use clap::Arg;
@@ -59,6 +59,11 @@ static REGISTRY: &[Entry] = &[
     ),
     (&["stats", "clicks-platforms"], &stats::CLICKS_PLATFORMS),
     (&["stats", "clicks-location"], &stats::CLICKS_LOCATION),
+    (&["domains", "list"], &domains::LIST),
+    (&["domains", "get"], &domains::GET),
+    (&["senders", "list"], &senders::LIST),
+    (&["senders", "get"], &senders::GET),
+    (&["data-removals", "get"], &data_removals::GET),
 ];
 
 /// Every endpoint command: its path in the command tree, and its spec.

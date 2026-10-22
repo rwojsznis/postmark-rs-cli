@@ -12,10 +12,13 @@ use crate::cli::commands::Leaf;
 use crate::cli::commands::bounces::BouncesCommand;
 use crate::cli::commands::bulk::BulkCommand;
 use crate::cli::commands::clicks::ClicksCommand;
+use crate::cli::commands::data_removals::DataRemovalsCommand;
+use crate::cli::commands::domains::DomainsCommand;
 use crate::cli::commands::inbound::InboundCommand;
 use crate::cli::commands::inbound_rules::InboundRulesCommand;
 use crate::cli::commands::opens::OpensCommand;
 use crate::cli::commands::outbound::OutboundCommand;
+use crate::cli::commands::senders::SendersCommand;
 use crate::cli::commands::server::ServerCommand;
 use crate::cli::commands::servers::ServersCommand;
 use crate::cli::commands::stats::StatsCommand;
@@ -183,6 +186,15 @@ enum Command {
     /// Outbound statistics: totals and day-by-day counts.
     #[command(subcommand)]
     Stats(StatsCommand),
+    /// The account's sending domains (account token).
+    #[command(subcommand)]
+    Domains(DomainsCommand),
+    /// The account's sender signatures (account token).
+    #[command(subcommand)]
+    Senders(SendersCommand),
+    /// Data removal requests (account token).
+    #[command(subcommand)]
+    DataRemovals(DataRemovalsCommand),
     /// Describe every command as JSON: endpoint, token, paging and flags.
     /// Needs no network and no token.
     Commands,
@@ -206,6 +218,9 @@ impl Command {
             Command::InboundRules(command) => Some(command.leaf()),
             Command::Bulk(command) => Some(command.leaf()),
             Command::Stats(command) => Some(command.leaf()),
+            Command::Domains(command) => Some(command.leaf()),
+            Command::Senders(command) => Some(command.leaf()),
+            Command::DataRemovals(command) => Some(command.leaf()),
             Command::Commands => None,
         }
     }

@@ -12,13 +12,7 @@ use std::fmt::Write;
 
 /// The endpoints that have no command yet. Each endpoint task removes its
 /// paths; the list is empty once every GET endpoint has its command.
-const NOT_YET_IMPLEMENTED: &[&str] = &[
-    "/data-removals/{id}",
-    "/domains",
-    "/domains/{domainid}",
-    "/senders",
-    "/senders/{signatureid}",
-];
+const NOT_YET_IMPLEMENTED: &[&str] = &[];
 
 /// Every leaf of the clap tree, as its command path.
 fn leaves(cmd: &clap::Command, prefix: &[String], out: &mut Vec<Vec<String>>) {
