@@ -67,6 +67,28 @@ pub enum Pagination {
     },
 }
 
+impl Pagination {
+    /// The largest `count` the endpoint takes, if it pages.
+    #[must_use]
+    pub fn max_count(self) -> Option<u32> {
+        match self {
+            Pagination::None => None,
+            Pagination::OffsetCount { max_count, .. } | Pagination::Cursor { max_count } => {
+                Some(max_count)
+            }
+        }
+    }
+
+    /// The ceiling on `count + offset`, if the docs state one.
+    #[must_use]
+    pub fn max_window(self) -> Option<u32> {
+        match self {
+            Pagination::OffsetCount { max_window, .. } => max_window,
+            Pagination::None | Pagination::Cursor { .. } => None,
+        }
+    }
+}
+
 /// One endpoint, as a leaf command declares it (decision 11).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EndpointSpec {
@@ -126,6 +148,21 @@ mod tests {
             spec("/a/{second-not-first}/b/{stream_ID}").placeholders(),
             ["second-not-first", "stream_ID"]
         );
+    }
+
+    #[test]
+    fn pagination_limits() {
+        let window = Pagination::OffsetCount {
+            max_count: 500,
+            max_window: Some(10_000),
+        };
+        assert_eq!(window.max_count(), Some(500));
+        assert_eq!(window.max_window(), Some(10_000));
+        let cursor = Pagination::Cursor { max_count: 500 };
+        assert_eq!(cursor.max_count(), Some(500));
+        assert_eq!(cursor.max_window(), None);
+        assert_eq!(Pagination::None.max_count(), None);
+        assert_eq!(Pagination::None.max_window(), None);
     }
 
     #[test]

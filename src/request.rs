@@ -133,6 +133,19 @@ impl GetRequest {
         }
     }
 
+    /// Sets `key=value`: in place when `key` is already there, so the order
+    /// stays as the leaf built it; at the end otherwise. Pagination uses it
+    /// to move `offset` and `paginationKey` from page to page.
+    #[must_use]
+    pub fn set_query(mut self, key: &str, value: impl Into<String>) -> Self {
+        let value = value.into();
+        match self.query.iter_mut().find(|(k, _)| k == key) {
+            Some((_, v)) => *v = value,
+            None => self.query.push((key.to_owned(), value)),
+        }
+        self
+    }
+
     /// Adds `key=true` when `set`. A plain opt-in flag sends nothing when it is
     /// off, so the API applies its own default (decision 8).
     #[must_use]
@@ -328,6 +341,21 @@ mod tests {
         assert_eq!(
             req.path_and_query(),
             "/messages/outbound?count=50&offset=0&recipient=user%40example.com&tag=one+two&subject=a%2Bb%26c%3Dd"
+        );
+    }
+
+    #[test]
+    fn set_query_replaces_in_place_or_appends() {
+        let req = GetRequest::new(&spec("/servers"), &[])
+            .unwrap()
+            .query("count", "50")
+            .query("offset", "0")
+            .query("name", "x")
+            .set_query("offset", "500")
+            .set_query("paginationKey", "a+b/c=");
+        assert_eq!(
+            req.path_and_query(),
+            "/servers?count=50&offset=500&name=x&paginationKey=a%2Bb%2Fc%3D"
         );
     }
 

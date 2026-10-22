@@ -4,13 +4,16 @@
 pub(crate) mod commands;
 pub mod exit;
 pub mod out;
+pub(crate) mod page;
 
 use crate::cli::commands::Leaf;
 use crate::cli::commands::server::ServerCommand;
+use crate::cli::commands::servers::ServersCommand;
 use crate::cli::exit::ExitStatus;
 use crate::client::{Executor, parse_base_url};
 use crate::error::Error;
 use crate::output::{self, Format};
+use crate::paginate::{Paging, Plan, Stop, merged};
 use crate::request::GetRequest;
 use crate::spec::EndpointSpec;
 use clap::{Args, Parser, Subcommand};
@@ -40,6 +43,7 @@ struct Cli {
 /// The flags of decision 7. `global = true`, so they work before or after
 /// the subcommand.
 #[derive(Args)]
+#[command(next_help_heading = "Global options")]
 struct Global {
     /// The server token, for server-level endpoints.
     #[arg(
@@ -103,12 +107,16 @@ enum Command {
     /// The server that owns the server token.
     #[command(subcommand)]
     Server(ServerCommand),
+    /// The servers of the account (account token).
+    #[command(subcommand)]
+    Servers(ServersCommand),
 }
 
 impl Command {
     fn leaf(&self) -> &dyn Leaf {
         match self {
             Command::Server(command) => command.leaf(),
+            Command::Servers(command) => command.leaf(),
         }
     }
 }
@@ -124,13 +132,23 @@ pub fn run() -> Result<ExitStatus, Error> {
     let cli = Cli::parse();
     let leaf = cli.command.leaf();
     let request = leaf.request()?;
-    cli.global.execute(leaf.spec(), request)
+    let plan = leaf
+        .paging()
+        .filter(Paging::active)
+        .and_then(|paging| Plan::new(leaf.spec(), paging));
+    cli.global.execute(leaf.spec(), request, plan.as_ref())
 }
 
 impl Global {
-    fn execute(self, spec: &EndpointSpec, request: GetRequest) -> Result<ExitStatus, Error> {
+    fn execute(
+        self,
+        spec: &EndpointSpec,
+        request: GetRequest,
+        plan: Option<&Plan>,
+    ) -> Result<ExitStatus, Error> {
         let base_url = parse_base_url(&self.base_url)?;
         if self.dry_run {
+            let request = plan.map_or(request.clone(), |plan| plan.first_request(&request));
             let url = request
                 .url(&base_url)
                 .map_err(|e| Error::config(format!("cannot build the request URL: {e}")))?;
@@ -153,8 +171,69 @@ impl Global {
             .enable_all()
             .build()
             .map_err(|e| Error::transport(format!("cannot start the async runtime: {e}")))?;
-        let value = runtime.block_on(executor.get(spec, request))?;
-        output::print(&value, self.format);
+        if let Some(plan) = plan {
+            runtime.block_on(all_pages(&executor, spec, plan, &request, self.format))?;
+        } else {
+            let value = runtime.block_on(executor.get(spec, request))?;
+            output::print_response(&value, spec.list_key, self.format);
+        }
         Ok(ExitStatus::Success)
+    }
+}
+
+/// `--all` and `--limit` (decision 9): jsonl streams each page's items as it
+/// arrives; json prints one merged response at the end.
+async fn all_pages(
+    executor: &Executor,
+    spec: &EndpointSpec,
+    plan: &Plan,
+    base: &GetRequest,
+    format: Format,
+) -> Result<(), Error> {
+    let fetch = |request| executor.get(spec, request);
+    let key = plan.list_key();
+    match format {
+        Format::Jsonl => {
+            let paged = plan
+                .run(base, fetch, |item| output::print(item, Format::Jsonl))
+                .await?;
+            warn_stop(&paged.stop, plan);
+            if let Stop::NoList(body) = paged.stop {
+                output::print(&body, Format::Jsonl);
+            }
+        }
+        Format::Json => {
+            let mut items = Vec::new();
+            let paged = plan
+                .run(base, fetch, |item| {
+                    items.push(item.clone());
+                    true
+                })
+                .await?;
+            warn_stop(&paged.stop, plan);
+            let body = match (paged.first, paged.stop) {
+                // The very first page had no list: print it as it came.
+                (None, Stop::NoList(body)) => body,
+                (first, _) => merged(first.unwrap_or_default(), key, items),
+            };
+            output::print(&body, Format::Json);
+        }
+    }
+    Ok(())
+}
+
+fn warn_stop(stop: &Stop, plan: &Plan) {
+    match stop {
+        Stop::Ceiling => output::warn(
+            "pagination_ceiling",
+            &format!(
+                "stopped at the {} items Postmark lets this search reach (count + offset); \
+                 narrow the search (with --from-date and --to-date, where the command has \
+                 them) to see the rest",
+                plan.window().unwrap_or_default()
+            ),
+        ),
+        Stop::NoList(_) => output::warn_list_key_missing(plan.list_key()),
+        Stop::Done | Stop::Limit | Stop::Closed => {}
     }
 }

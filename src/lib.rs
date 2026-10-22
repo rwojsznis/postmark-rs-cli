@@ -13,5 +13,6 @@ pub mod cli;
 pub mod client;
 pub mod error;
 pub mod output;
+pub mod paginate;
 pub mod request;
 pub mod spec;

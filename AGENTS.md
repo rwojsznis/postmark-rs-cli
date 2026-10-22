@@ -34,13 +34,15 @@ by number ("decision 5").
 | `src/lib.rs` | Module list and the panic-family lints |
 | `src/client.rs` | `Executor`: one token per request, the timeout, `--verbose`, `QueryError` → `Error`; `--base-url` validation |
 | `src/error.rs` | `Error`, its kinds, exit codes, the JSON error line (decision 5) |
-| `src/output.rs` | `Format`, json/jsonl rendering (decisions 3, 4) |
+| `src/output.rs` | `Format`, json/jsonl rendering, list items for jsonl, warning lines (decisions 3, 4) |
+| `src/paginate.rs` | `Plan`: the `--all`/`--limit` loop for offset and cursor pagination, the merged json (decision 9) |
 | `src/request.rs` | `GetRequest`: path-segment encoding, the query builder, the `postmark::Endpoint` impl (decisions 1, 2) |
 | `src/spec.rs` | `EndpointSpec`, `TokenKind`, `Pagination` |
 | `src/cli/mod.rs` | `Cli`, the global flags, the `Command` enum, the one dispatcher (`--dry-run`, the runtime, printing) |
 | `src/cli/commands/mod.rs` | The `Leaf` trait: `spec()` + a pure `request()` per endpoint (decision 11) |
 | `src/cli/commands/<resource>.rs` | One file per resource: clap args, a `static` spec per leaf, unit tests for `request()` |
 | `src/cli/exit.rs` | The exit codes, as a type (decision 5) |
+| `src/cli/page.rs` | `PageArgs` (`--count`, `--offset`, validation), `AllArgs` (`--all`, `--limit`) |
 | `src/cli/out.rs` | Writes that are safe on a broken pipe, and the print macros |
 | `tests/common/mod.rs` | The harness: `cli()`/`run()`, `expect_get` for the mock, the sentinel token, `assert_no_secret` |
 | `tests/<resource>.rs` | Integration tests per resource; `tests/errors.rs` for every error path |
@@ -136,6 +138,21 @@ mise manages Rust and every dev tool (decision 15).
 - **stdout:** `--format json` is pretty (2-space indent, trailing newline);
   `jsonl` is one compact value per line. `serde_json`'s `preserve_order` keeps
   Postmark's key order. Print through `output::print`, never `println!`.
+- **Pagination** (decision 9):
+  - An offset-paginated leaf flattens `PageArgs` and `AllArgs`, builds its
+    request with `self.page.request(&SPEC, &params)?` (validated `count` and
+    `offset` first, then its filters), and returns `self.page.paging(&self.all)`
+    from `Leaf::paging`. A cursor leaf flattens `AllArgs` only.
+  - The spec's `pagination` and `list_key` drive everything else. The pager
+    overwrites `count`/`offset`/`paginationKey` per page with
+    `GetRequest::set_query`, so the query order stays as the leaf built it.
+  - `--limit` pages too, without `--all`. The last page asks only for what is
+    left, and never past the `count + offset` window.
+  - Stops are warnings, not errors: `pagination_ceiling` at the window,
+    `list_key_missing` when a response has no list. Both exit 0.
+  - jsonl streams items as pages arrive and stops fetching when stdout
+    closes; json prints one merged body (page 1's keys, all items, no
+    `PaginationKey`).
 - A new error path needs a case in `tests/errors.rs` that runs with the
   sentinel token and calls `assert_no_secret`.
 - **Tokens never appear** in stdout, stderr, `--dry-run`, `--verbose` or an
