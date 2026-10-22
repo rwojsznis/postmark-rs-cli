@@ -18,18 +18,6 @@ const NOT_YET_IMPLEMENTED: &[&str] = &[
     "/domains/{domainid}",
     "/senders",
     "/senders/{signatureid}",
-    "/stats/outbound",
-    "/stats/outbound/bounces",
-    "/stats/outbound/clicks",
-    "/stats/outbound/clicks/browserfamilies",
-    "/stats/outbound/clicks/location",
-    "/stats/outbound/clicks/platforms",
-    "/stats/outbound/opens",
-    "/stats/outbound/opens/emailclients",
-    "/stats/outbound/opens/platforms",
-    "/stats/outbound/sends",
-    "/stats/outbound/spam",
-    "/stats/outbound/tracked",
 ];
 
 /// Every leaf of the clap tree, as its command path.
@@ -383,7 +371,11 @@ const POSTMARK_RS: &[(&str, &str, &str)] = &[
         "postmark-rs sends no `name`.",
     ),
     ("/servers/{serverid}", "GetServerRequest", ""),
-    ("/stats/outbound", "GetOutboundOverviewRequest", ""),
+    (
+        "/stats/outbound",
+        "GetOutboundOverviewRequest",
+        "postmark-rs sends `MessageStream`; the docs and we send `messagestream`. Applies to every stats endpoint.",
+    ),
     ("/stats/outbound/bounces", "GetBounceCountsRequest", ""),
     ("/stats/outbound/clicks", "GetClickCountsRequest", ""),
     (

@@ -18,6 +18,7 @@ use crate::cli::commands::opens::OpensCommand;
 use crate::cli::commands::outbound::OutboundCommand;
 use crate::cli::commands::server::ServerCommand;
 use crate::cli::commands::servers::ServersCommand;
+use crate::cli::commands::stats::StatsCommand;
 use crate::cli::commands::streams::StreamsCommand;
 use crate::cli::commands::suppressions::SuppressionsCommand;
 use crate::cli::commands::templates::TemplatesCommand;
@@ -179,6 +180,9 @@ enum Command {
     /// Bulk API send requests (needs Bulk API approval).
     #[command(subcommand)]
     Bulk(BulkCommand),
+    /// Outbound statistics: totals and day-by-day counts.
+    #[command(subcommand)]
+    Stats(StatsCommand),
     /// Describe every command as JSON: endpoint, token, paging and flags.
     /// Needs no network and no token.
     Commands,
@@ -201,6 +205,7 @@ impl Command {
             Command::Webhooks(command) => Some(command.leaf()),
             Command::InboundRules(command) => Some(command.leaf()),
             Command::Bulk(command) => Some(command.leaf()),
+            Command::Stats(command) => Some(command.leaf()),
             Command::Commands => None,
         }
     }

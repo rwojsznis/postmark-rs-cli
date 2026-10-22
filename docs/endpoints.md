@@ -34,3 +34,15 @@ and review the diff.
 | `inbound-rules list` | GET | `/triggers/inboundrules` | server | offset, max 500 | `InboundRules` | `ListInboundRuleTriggersRequest` |  |
 | `bulk list` | GET | `/email/bulk` | server | cursor, max 500 | `Requests` | not in postmark-rs | Cursor pagination with `PaginationKey`. |
 | `bulk get` | GET | `/email/bulk/{bulk-request-id}` | server | none | — | `GetBulkStatusRequest` |  |
+| `stats overview` | GET | `/stats/outbound` | server | none | — | `GetOutboundOverviewRequest` | postmark-rs sends `MessageStream`; the docs and we send `messagestream`. Applies to every stats endpoint. |
+| `stats sends` | GET | `/stats/outbound/sends` | server | none | — | `GetSentCountsRequest` |  |
+| `stats bounces` | GET | `/stats/outbound/bounces` | server | none | — | `GetBounceCountsRequest` |  |
+| `stats spam` | GET | `/stats/outbound/spam` | server | none | — | `GetSpamComplaintsRequest` |  |
+| `stats tracked` | GET | `/stats/outbound/tracked` | server | none | — | `GetTrackedEmailCountsRequest` |  |
+| `stats opens` | GET | `/stats/outbound/opens` | server | none | — | `GetEmailOpenCountsRequest` |  |
+| `stats opens-platforms` | GET | `/stats/outbound/opens/platforms` | server | none | — | `GetEmailPlatformUsageRequest` |  |
+| `stats opens-email-clients` | GET | `/stats/outbound/opens/emailclients` | server | none | — | `GetEmailClientUsageRequest` |  |
+| `stats clicks` | GET | `/stats/outbound/clicks` | server | none | — | `GetClickCountsRequest` |  |
+| `stats clicks-browser-families` | GET | `/stats/outbound/clicks/browserfamilies` | server | none | — | `GetBrowserUsageRequest` |  |
+| `stats clicks-platforms` | GET | `/stats/outbound/clicks/platforms` | server | none | — | `GetBrowserPlatformUsageRequest` |  |
+| `stats clicks-location` | GET | `/stats/outbound/clicks/location` | server | none | — | `GetClickLocationRequest` |  |

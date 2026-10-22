@@ -412,3 +412,82 @@ fn bulk_get() {
             .build(),
     );
 }
+
+/// The stats endpoints, on the path and on `tag`, `fromdate` and `todate`.
+///
+/// Known difference: postmark-rs sends the stream as `MessageStream`; the docs'
+/// parameter table spells it `messagestream`, and we follow the docs (decision
+/// 8). The two keys differ, so `shared` leaves that pair out of the comparison.
+#[test]
+fn stats() {
+    use postmark::api::stats::*;
+    let query = StatsQuery {
+        tag: Some("welcome".to_owned()),
+        fromdate: Some("2026-01-01".to_owned()),
+        todate: Some("2026-01-31".to_owned()),
+        message_stream: Some("outbound".to_owned()),
+    };
+    let argv = |command| {
+        [
+            "stats",
+            command,
+            "--tag",
+            "welcome",
+            "--from-date",
+            "2026-01-01",
+            "--to-date",
+            "2026-01-31",
+            "--message-stream",
+            "outbound",
+        ]
+    };
+    let q = || query.clone();
+    assert_parity(
+        &argv("overview"),
+        &GetOutboundOverviewRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("sends"),
+        &GetSentCountsRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("bounces"),
+        &GetBounceCountsRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("spam"),
+        &GetSpamComplaintsRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("tracked"),
+        &GetTrackedEmailCountsRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("opens"),
+        &GetEmailOpenCountsRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("opens-platforms"),
+        &GetEmailPlatformUsageRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("opens-email-clients"),
+        &GetEmailClientUsageRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("clicks"),
+        &GetClickCountsRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("clicks-browser-families"),
+        &GetBrowserUsageRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("clicks-platforms"),
+        &GetBrowserPlatformUsageRequest::builder().query(q()).build(),
+    );
+    assert_parity(
+        &argv("clicks-location"),
+        &GetClickLocationRequest::builder().query(q()).build(),
+    );
+}

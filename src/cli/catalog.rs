@@ -4,8 +4,8 @@
 //! parser.
 
 use crate::cli::commands::{
-    bounces, bulk, clicks, inbound, inbound_rules, opens, outbound, server, servers, streams,
-    suppressions, templates, webhooks,
+    bounces, bulk, clicks, inbound, inbound_rules, opens, outbound, server, servers, stats,
+    streams, suppressions, templates, webhooks,
 };
 use crate::spec::{EndpointSpec, Pagination};
 use clap::Arg;
@@ -41,6 +41,24 @@ static REGISTRY: &[Entry] = &[
     (&["inbound-rules", "list"], &inbound_rules::LIST),
     (&["bulk", "list"], &bulk::LIST),
     (&["bulk", "get"], &bulk::GET),
+    (&["stats", "overview"], &stats::OVERVIEW),
+    (&["stats", "sends"], &stats::SENDS),
+    (&["stats", "bounces"], &stats::BOUNCES),
+    (&["stats", "spam"], &stats::SPAM),
+    (&["stats", "tracked"], &stats::TRACKED),
+    (&["stats", "opens"], &stats::OPENS),
+    (&["stats", "opens-platforms"], &stats::OPENS_PLATFORMS),
+    (
+        &["stats", "opens-email-clients"],
+        &stats::OPENS_EMAIL_CLIENTS,
+    ),
+    (&["stats", "clicks"], &stats::CLICKS),
+    (
+        &["stats", "clicks-browser-families"],
+        &stats::CLICKS_BROWSER_FAMILIES,
+    ),
+    (&["stats", "clicks-platforms"], &stats::CLICKS_PLATFORMS),
+    (&["stats", "clicks-location"], &stats::CLICKS_LOCATION),
 ];
 
 /// Every endpoint command: its path in the command tree, and its spec.

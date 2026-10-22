@@ -9,6 +9,7 @@ pub(crate) mod opens;
 pub(crate) mod outbound;
 pub(crate) mod server;
 pub(crate) mod servers;
+pub(crate) mod stats;
 pub(crate) mod streams;
 pub(crate) mod suppressions;
 pub(crate) mod templates;
