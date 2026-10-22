@@ -245,6 +245,7 @@ mod tests {
             max_window: None,
         },
         list_key: Some("Servers"),
+        example: "",
     };
 
     static WINDOW: EndpointSpec = EndpointSpec {

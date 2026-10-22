@@ -99,6 +99,9 @@ pub struct EndpointSpec {
     pub pagination: Pagination,
     /// The response key that holds the list, for `--format jsonl` and `--all`.
     pub list_key: Option<&'static str>,
+    /// A full command line for `--help` and the catalog. Words split on
+    /// whitespace, so no quoting; a test parses every one.
+    pub example: &'static str,
 }
 
 impl EndpointSpec {
@@ -126,6 +129,7 @@ mod tests {
             summary: "",
             pagination: Pagination::None,
             list_key: None,
+            example: "",
         }
     }
 

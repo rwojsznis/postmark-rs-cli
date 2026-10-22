@@ -204,6 +204,7 @@ mod tests {
             summary: "",
             pagination: Pagination::None,
             list_key: None,
+            example: "",
         };
         let server = Server::run();
         server.expect(

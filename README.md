@@ -14,7 +14,8 @@ Postmark's JSON unchanged.
 email or changes state, so an agent can run any command without asking for
 confirmation.
 
-Status: work in progress.
+Status: work in progress. [`docs/endpoints.md`](docs/endpoints.md) lists the
+commands that exist so far, and `postmark-cli commands` prints them as JSON.
 
 ## License
 

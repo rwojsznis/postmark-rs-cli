@@ -101,6 +101,7 @@ mod tests {
             max_window: Some(10_000),
         },
         list_key: Some("Bounces"),
+        example: "",
     };
 
     fn page(count: Option<u32>, offset: u32) -> PageArgs {

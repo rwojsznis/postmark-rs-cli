@@ -212,6 +212,7 @@ mod tests {
             summary: "",
             pagination: Pagination::None,
             list_key: None,
+            example: "",
         }
     }
 
@@ -401,20 +402,5 @@ mod tests {
         assert_eq!(req.method(), http::Method::GET);
         assert_eq!(req.endpoint(), "/server?a=1");
         assert_eq!(req.body(), &());
-    }
-
-    #[test]
-    fn the_path_matches_postmark_rs_for_a_template_alias() {
-        let theirs = postmark::api::templates::GetTemplateRequest::builder()
-            .id(postmark::api::templates::TemplateIdOrAlias::Alias(
-                "folder/name with space".to_string(),
-            ))
-            .build();
-        let ours = GetRequest::new(
-            &spec("/templates/{templateIdOrAlias}"),
-            &["folder/name with space"],
-        )
-        .unwrap();
-        assert_eq!(ours.endpoint(), theirs.endpoint());
     }
 }

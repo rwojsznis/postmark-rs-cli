@@ -36,7 +36,7 @@ pub(crate) struct ListArgs {
     name: Option<String>,
 }
 
-static LIST: EndpointSpec = EndpointSpec {
+pub(crate) static LIST: EndpointSpec = EndpointSpec {
     path: "/servers",
     token: TokenKind::Account,
     summary: "List the servers of the account.",
@@ -46,6 +46,7 @@ static LIST: EndpointSpec = EndpointSpec {
         max_window: None,
     },
     list_key: Some("Servers"),
+    example: "postmark-cli servers list --name prod --count 10",
 };
 
 impl Leaf for ListArgs {
@@ -71,12 +72,13 @@ pub(crate) struct GetArgs {
     server_id: u64,
 }
 
-static GET: EndpointSpec = EndpointSpec {
+pub(crate) static GET: EndpointSpec = EndpointSpec {
     path: "/servers/{serverid}",
     token: TokenKind::Account,
     summary: "Get one server of the account.",
     pagination: Pagination::None,
     list_key: None,
+    example: "postmark-cli servers get 123",
 };
 
 impl Leaf for GetArgs {

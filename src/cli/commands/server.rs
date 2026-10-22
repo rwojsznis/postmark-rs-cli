@@ -23,12 +23,13 @@ impl ServerCommand {
 #[derive(Debug, Args)]
 pub(crate) struct GetArgs {}
 
-static GET: EndpointSpec = EndpointSpec {
+pub(crate) static GET: EndpointSpec = EndpointSpec {
     path: "/server",
     token: TokenKind::Server,
     summary: "Get the server that owns the server token.",
     pagination: Pagination::None,
     list_key: None,
+    example: "postmark-cli server get",
 };
 
 impl Leaf for GetArgs {
