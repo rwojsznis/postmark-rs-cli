@@ -16,8 +16,6 @@ const NOT_YET_IMPLEMENTED: &[&str] = &[
     "/data-removals/{id}",
     "/domains",
     "/domains/{domainid}",
-    "/email/bulk",
-    "/email/bulk/{bulk-request-id}",
     "/senders",
     "/senders/{signatureid}",
     "/stats/outbound",
@@ -32,10 +30,6 @@ const NOT_YET_IMPLEMENTED: &[&str] = &[
     "/stats/outbound/sends",
     "/stats/outbound/spam",
     "/stats/outbound/tracked",
-    "/triggers/inboundrules",
-    "/webhooks",
-    "/webhooks/{Id}",
-    "/webhooks/{Id}/statistics",
 ];
 
 /// Every leaf of the clap tree, as its command path.

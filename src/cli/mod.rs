@@ -10,8 +10,10 @@ pub(crate) mod page;
 
 use crate::cli::commands::Leaf;
 use crate::cli::commands::bounces::BouncesCommand;
+use crate::cli::commands::bulk::BulkCommand;
 use crate::cli::commands::clicks::ClicksCommand;
 use crate::cli::commands::inbound::InboundCommand;
+use crate::cli::commands::inbound_rules::InboundRulesCommand;
 use crate::cli::commands::opens::OpensCommand;
 use crate::cli::commands::outbound::OutboundCommand;
 use crate::cli::commands::server::ServerCommand;
@@ -19,6 +21,7 @@ use crate::cli::commands::servers::ServersCommand;
 use crate::cli::commands::streams::StreamsCommand;
 use crate::cli::commands::suppressions::SuppressionsCommand;
 use crate::cli::commands::templates::TemplatesCommand;
+use crate::cli::commands::webhooks::WebhooksCommand;
 use crate::cli::exit::ExitStatus;
 use crate::client::{Executor, parse_base_url};
 use crate::error::Error;
@@ -167,6 +170,15 @@ enum Command {
     /// The addresses a stream will not send to.
     #[command(subcommand)]
     Suppressions(SuppressionsCommand),
+    /// Webhooks and their delivery statistics.
+    #[command(subcommand)]
+    Webhooks(WebhooksCommand),
+    /// Inbound rules: addresses and domains whose mail is blocked.
+    #[command(subcommand)]
+    InboundRules(InboundRulesCommand),
+    /// Bulk API send requests (needs Bulk API approval).
+    #[command(subcommand)]
+    Bulk(BulkCommand),
     /// Describe every command as JSON: endpoint, token, paging and flags.
     /// Needs no network and no token.
     Commands,
@@ -186,6 +198,9 @@ impl Command {
             Command::Templates(command) => Some(command.leaf()),
             Command::Streams(command) => Some(command.leaf()),
             Command::Suppressions(command) => Some(command.leaf()),
+            Command::Webhooks(command) => Some(command.leaf()),
+            Command::InboundRules(command) => Some(command.leaf()),
+            Command::Bulk(command) => Some(command.leaf()),
             Command::Commands => None,
         }
     }

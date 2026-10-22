@@ -373,3 +373,42 @@ fn suppressions_dump() {
             .build(),
     );
 }
+
+#[test]
+fn webhooks() {
+    use postmark::api::webhooks::{GetWebhookRequest, ListWebhooksRequest};
+    assert_parity(
+        &["webhooks", "list", "--message-stream", "outbound"],
+        &ListWebhooksRequest::builder()
+            .message_stream("outbound")
+            .build(),
+    );
+    assert_parity(
+        &["webhooks", "get", "1234567"],
+        &GetWebhookRequest::builder().webhook_id(1_234_567).build(),
+    );
+}
+
+#[test]
+fn inbound_rules() {
+    use postmark::api::triggers::ListInboundRuleTriggersRequest;
+    assert_parity(
+        &["inbound-rules", "list", "--count", "30", "--offset", "60"],
+        &ListInboundRuleTriggersRequest::builder()
+            .count(30)
+            .offset(60)
+            .build(),
+    );
+}
+
+#[test]
+fn bulk_get() {
+    use postmark::api::bulk::GetBulkStatusRequest;
+    let id = "f24af63c-533d-4b7a-ad65-4a7b3202d3a7";
+    assert_parity(
+        &["bulk", "get", id],
+        &GetBulkStatusRequest::builder()
+            .bulk_request_id(id.to_owned())
+            .build(),
+    );
+}

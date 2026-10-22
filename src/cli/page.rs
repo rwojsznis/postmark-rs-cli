@@ -1,5 +1,6 @@
 //! The paging flags (decision 9). A command with offset pagination flattens
-//! `PageArgs`; every paginated command flattens `AllArgs`.
+//! `PageArgs`, one with cursor pagination `CursorArgs`; every paginated
+//! command flattens `AllArgs`.
 
 use crate::error::Error;
 use crate::paginate::Paging;
@@ -52,17 +53,7 @@ impl PageArgs {
     /// `1 <= count <= max_count`, and `count + offset <= max_window` where the
     /// docs state a window. A breach is a `config` error, exit 2.
     pub(crate) fn validate(&self, spec: &EndpointSpec) -> Result<(), Error> {
-        let count = self.count.unwrap_or(DEFAULT_COUNT);
-        if count == 0 {
-            return Err(Error::config("--count must be at least 1"));
-        }
-        if let Some(max) = spec.pagination.max_count()
-            && count > max
-        {
-            return Err(Error::config(format!(
-                "--count {count} is over this endpoint's maximum of {max}"
-            )));
-        }
+        let count = validate_count(self.count, spec)?;
         let reach = u64::from(count) + u64::from(self.offset);
         if let Some(window) = spec.pagination.max_window()
             && reach > u64::from(window)
@@ -81,6 +72,59 @@ impl PageArgs {
         Paging {
             count: self.count,
             offset: self.offset,
+            all: all.all,
+            limit: all.limit,
+        }
+    }
+}
+
+/// `1 <= count <= max_count`. Returns the count to send.
+fn validate_count(count: Option<u32>, spec: &EndpointSpec) -> Result<u32, Error> {
+    let count = count.unwrap_or(DEFAULT_COUNT);
+    if count == 0 {
+        return Err(Error::config("--count must be at least 1"));
+    }
+    if let Some(max) = spec.pagination.max_count()
+        && count > max
+    {
+        return Err(Error::config(format!(
+            "--count {count} is over this endpoint's maximum of {max}"
+        )));
+    }
+    Ok(count)
+}
+
+#[derive(Debug, Args)]
+pub(crate) struct CursorArgs {
+    /// Items per page (sends `count`). Default 50; with --all or --limit, the
+    /// endpoint's maximum.
+    #[arg(long, value_name = "N")]
+    pub(crate) count: Option<u32>,
+
+    /// Start at this page: the `PaginationKey` of the previous response,
+    /// exactly as received (sends `paginationKey`).
+    #[arg(long, value_name = "KEY")]
+    pub(crate) pagination_key: Option<String>,
+}
+
+impl CursorArgs {
+    /// The first page's request: `count`, then `paginationKey` when given.
+    pub(crate) fn request(
+        &self,
+        spec: &EndpointSpec,
+        path_params: &[&str],
+    ) -> Result<GetRequest, Error> {
+        let count = validate_count(self.count, spec)?;
+        Ok(GetRequest::new(spec, path_params)?
+            .query("count", count.to_string())
+            .query_opt("paginationKey", self.pagination_key.clone()))
+    }
+
+    /// What the pager needs, when `--all` or `--limit` is on.
+    pub(crate) fn paging(&self, all: &AllArgs) -> Paging {
+        Paging {
+            count: self.count,
+            offset: 0,
             all: all.all,
             limit: all.limit,
         }
@@ -155,6 +199,38 @@ mod tests {
             ..WINDOW
         };
         assert!(page(Some(500), 1_000_000).validate(&NO_WINDOW).is_ok());
+    }
+
+    #[test]
+    fn a_cursor_request_sends_count_and_the_key_unchanged() {
+        static CURSOR: EndpointSpec = EndpointSpec {
+            pagination: Pagination::Cursor { max_count: 500 },
+            ..WINDOW
+        };
+        let cursor = |count, key: Option<&str>| CursorArgs {
+            count,
+            pagination_key: key.map(String::from),
+        };
+        assert_eq!(
+            cursor(None, None)
+                .request(&CURSOR, &[])
+                .unwrap()
+                .path_and_query(),
+            "/bounces?count=50"
+        );
+        assert_eq!(
+            cursor(Some(20), Some("a+b/c= d"))
+                .request(&CURSOR, &[])
+                .unwrap()
+                .path_and_query(),
+            "/bounces?count=20&paginationKey=a%2Bb%2Fc%3D+d"
+        );
+        assert!(cursor(Some(501), None).request(&CURSOR, &[]).is_err());
+        let all = AllArgs {
+            all: true,
+            limit: None,
+        };
+        assert_eq!(cursor(Some(5), None).paging(&all).count, Some(5));
     }
 
     #[test]

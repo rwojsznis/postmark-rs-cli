@@ -28,3 +28,9 @@ and review the diff.
 | `streams list` | GET | `/message-streams` | server | none | `MessageStreams` | `ListMessageStreamsRequest` | Not paginated. |
 | `streams get` | GET | `/message-streams/{stream_ID}` | server | none | — | `GetMessageStreamRequest` |  |
 | `suppressions dump` | GET | `/message-streams/{stream_id}/suppressions/dump` | server | none | `Suppressions` | `GetSuppressionRequest` | Not paginated. |
+| `webhooks list` | GET | `/webhooks` | server | none | `Webhooks` | `ListWebhooksRequest` | Not paginated. |
+| `webhooks get` | GET | `/webhooks/{Id}` | server | none | — | `GetWebhookRequest` |  |
+| `webhooks stats` | GET | `/webhooks/{Id}/statistics` | server | none | — | not in postmark-rs | The last 24 hours. |
+| `inbound-rules list` | GET | `/triggers/inboundrules` | server | offset, max 500 | `InboundRules` | `ListInboundRuleTriggersRequest` |  |
+| `bulk list` | GET | `/email/bulk` | server | cursor, max 500 | `Requests` | not in postmark-rs | Cursor pagination with `PaginationKey`. |
+| `bulk get` | GET | `/email/bulk/{bulk-request-id}` | server | none | — | `GetBulkStatusRequest` |  |

@@ -1,8 +1,10 @@
 //! One module per resource; one `Leaf` per endpoint (decision 11).
 
 pub(crate) mod bounces;
+pub(crate) mod bulk;
 pub(crate) mod clicks;
 pub(crate) mod inbound;
+pub(crate) mod inbound_rules;
 pub(crate) mod opens;
 pub(crate) mod outbound;
 pub(crate) mod server;
@@ -11,6 +13,7 @@ pub(crate) mod streams;
 pub(crate) mod suppressions;
 pub(crate) mod templates;
 pub(crate) mod tracking;
+pub(crate) mod webhooks;
 
 use crate::error::Error;
 use crate::paginate::Paging;
