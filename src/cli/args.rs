@@ -62,8 +62,7 @@ pub(crate) fn api_name(value: &impl ValueEnum) -> String {
     // `None` only for a variant marked `#[value(skip)]`, which no flag has.
     value
         .to_possible_value()
-        .map(|v| v.get_name().to_owned())
-        .unwrap_or_default()
+        .map_or_default(|v| v.get_name().to_owned())
 }
 
 #[cfg(test)]
