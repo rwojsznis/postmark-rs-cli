@@ -25,6 +25,7 @@ const PATH_SEGMENT: &AsciiSet = &CONTROLS
     .add(b'`')
     .add(b'#')
     .add(b'?')
+    .add(b'^')
     .add(b'{')
     .add(b'}')
     .add(b'/')
